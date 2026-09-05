@@ -98,6 +98,10 @@ def main():
     ap.add_argument("--grad-accum", type=int, default=4)
     ap.add_argument("--lora-r", type=int, default=32)
     ap.add_argument("--save-steps", type=int, default=50)
+    # Resume after a machine switch or a reclaimed session. Checkpoints live on the
+    # persistent volume, so training survives moving between T4 and H100.
+    ap.add_argument("--resume", default=None,
+                    help="checkpoint dir, or 'auto' to pick the newest in output-dir")
     args = ap.parse_args()
 
     import torch
@@ -173,7 +177,14 @@ def main():
         ),
     )
 
-    stats = trainer.train()
+    resume = args.resume
+    if resume == "auto":
+        cks = sorted(args.output_dir.glob("checkpoint-*"),
+                     key=lambda p: int(p.name.split("-")[1]))
+        resume = str(cks[-1]) if cks else None
+        print(f"resuming from: {resume or 'scratch'}", flush=True)
+
+    stats = trainer.train(resume_from_checkpoint=resume)
     print("train_runtime:", stats.metrics.get("train_runtime"), flush=True)
     print("train_loss:", stats.metrics.get("train_loss"), flush=True)
 
