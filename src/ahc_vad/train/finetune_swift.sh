@@ -8,11 +8,11 @@ set -euo pipefail
 
 # NOTE: T4 (Turing SM75) has NO bf16 support. TORCH_DTYPE defaults to float16 for that
 # reason; override to bfloat16 only on Ampere+ (A100/L4/L40S).
-MODEL="${MODEL:-Qwen/Qwen2.5-VL-7B-Instruct}"
+MODEL="${MODEL:-Qwen/Qwen3-VL-8B-Instruct}"
 TORCH_DTYPE="${TORCH_DTYPE:-float16}"
 TRAIN_DATA="${TRAIN_DATA:-data/processed/train.jsonl}"
 VAL_DATA="${VAL_DATA:-data/processed/val.jsonl}"
-OUTPUT_DIR="${OUTPUT_DIR:-outputs/qwen2.5-vl-7b-lora}"
+OUTPUT_DIR="${OUTPUT_DIR:-outputs/qwen3-vl-8b-lora}"
 
 # IMAGE_MAX_TOKEN_NUM / FPS_MAX_FRAMES are the memory and latency dials - tune down for
 # real-time inference budgets, tune up if accuracy is low on multi-event clips.

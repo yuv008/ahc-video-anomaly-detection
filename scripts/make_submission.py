@@ -89,7 +89,7 @@ def main() -> None:
     ap.add_argument("--dataset-root", type=Path, default=Path("data/raw"))
     ap.add_argument("--out", type=Path, default=Path("data/processed/submission.json"))
     ap.add_argument("--submission-id", default="ahc-run-01")
-    ap.add_argument("--model-name", default="qwen2.5-vl-7b-4bit-lora")
+    ap.add_argument("--model-name", default="qwen3-vl-8b-4bit-lora-r32")
     ap.add_argument("--hardware", default="1x Tesla T4 (16GB)")
     ap.add_argument("--sweep", action="store_true")
     ap.add_argument("--refine", default="midpoint",

@@ -1,4 +1,4 @@
-"""LoRA fine-tune Qwen2.5-VL-7B on pre-extracted window frames. Runs on the T4 via colab exec.
+"""LoRA fine-tune Qwen3-VL-8B on pre-extracted window frames. Runs on the T4 via colab exec.
 
 Consumes the frame pack produced by scripts/export_frames.py:
     /content/export_train/frames/<window_id>/f*.jpg
@@ -8,9 +8,9 @@ No video decoding and no dataset logic here - windows are already labelled by te
 overlap locally (docs/architecture.md 3.1) and frames are already at the deployment
 resolution, so there is no train/serve skew.
 
-Model choice (docs/architecture.md 5.4): 7B, not 3B. Measured on this exact GPU the 7B is
-FASTER despite being larger - the 3B is deeper and narrower (36 layers vs 28) and depth
-dominates latency at batch 1.
+Model choice (docs/architecture.md 11.1): Qwen3-VL-8B. Every top team on the AI City
+2026 Track-3 leaderboard used a ~8B Qwen VLM. Qwen3.5 was rejected only because it has no
+unsloth 4-bit build, and the leaderboard gap to Qwen3-VL-8B is 0.0009.
 """
 
 import argparse

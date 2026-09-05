@@ -1,7 +1,7 @@
 """LoRA fine-tune a small VLM with Unsloth. Intended to run on a free Kaggle/Colab T4.
 
 Usage (in a Kaggle/Colab cell or locally with a GPU):
-    python -m ahc_vad.train.finetune_unsloth --dataset-root data/raw --output-dir outputs/qwen2.5-vl-7b-lora
+    python -m ahc_vad.train.finetune_unsloth --dataset-root data/raw --output-dir outputs/qwen3-vl-8b-lora
 """
 
 from __future__ import annotations
@@ -13,9 +13,9 @@ from pathlib import Path
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-root", type=Path, default=Path("data/raw"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/qwen2.5-vl-7b-lora"))
-    # 7B over 3B: measured FASTER on a T4 despite being larger (the 3B is deeper/narrower -
-    # 36 layers vs 28 - and depth dominates latency at batch 1). See architecture 5.4.
+    parser.add_argument("--output-dir", type=Path, default=Path("outputs/qwen3-vl-8b-lora"))
+    # Qwen3-VL-8B: the model every AI City Track-3 top team used (architecture 11.1).
+    # Note patch 16 vs Qwen2.5-VL's 14, so the same frame costs fewer vision tokens.
     parser.add_argument("--base-model", default="unsloth/Qwen3-VL-8B-Instruct-unsloth-bnb-4bit")
     parser.add_argument("--num-frames", type=int, default=8)
     parser.add_argument("--max-steps", type=int, default=300)

@@ -8,14 +8,17 @@ generation only.
 Pipeline (docs/architecture.md 2):
     window sampler -> [gate] -> VLM -> temporal aggregator -> events
 
-The gate (Stage 1) is not implemented yet; `--gate none` runs the VLM on every window, which
-is fine for OFFLINE leaderboard scoring but is ~1.8x slower than real-time on a T4 for a
-single feed (docs/architecture.md 5). The gate is required to substantiate the real-time
-claim, not to produce a submission.
+Stage 1 (gate) is NOT built, and measurement showed it is not needed for the single-feed
+real-time claim: with stride = window = 4s, several configurations clear the 4s/window budget
+on a T4 outright (docs/architecture.md 5.3). Its remaining value is multiplying feeds per GPU,
+which is a throughput argument rather than a correctness one.
+
+Model: Qwen3-VL-8B 4-bit LoRA (docs/architecture.md 0). At 8 frames it measures 4.64 s/window
+= 116% of the real-time budget, so scored inference subsamples to 4 frames via --frames.
 
 Usage:
     python -m ahc_vad.infer.realtime_infer \
-        --model outputs/qwen2.5-vl-3b-lora --dataset-root data/raw --out preds.csv
+        --model outputs/qwen3-vl-8b-lora --dataset-root data/raw --out preds.csv
 """
 
 from __future__ import annotations

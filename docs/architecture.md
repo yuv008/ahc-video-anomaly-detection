@@ -13,6 +13,37 @@ Design decisions and their evidence, derived from analysis of the actual downloa
 
 ---
 
+## 0. Final model selection
+
+The single place to look for what is actually deployed. Everything below is either measured
+here or taken from the AI City 2026 Track-3 leaderboard; nothing is aspirational.
+
+| Stage | Model | Status |
+|---|---|---|
+| 0 — window sampler | *(no model)* | 4s windows, no overlap, 8 frames; 4 at inference for real-time (§11.4) |
+| 1 — gate | **none built** | see below — this is an honest gap, not a silent omission |
+| **2 — classifier** | **Qwen3-VL-8B-Instruct, 4-bit, LoRA r=32, fp16** | **shipped** — validated at +0.092 L1 over zero-shot (§11.4) |
+| 3 — aggregator | *(no model)* | hysteresis + merge + midpoint boundary refinement, CPU only |
+
+### Why Qwen3-VL-8B
+
+Every top entry on the AI City 2026 Track-3 leaderboard runs a ~8B Qwen VLM (§11.1). Before
+switching we verified the two things that would have silently invalidated the frame packs or
+the training script: **patch 16 vs 14** (so a 588×336 frame is 192 tokens, not 252) and an
+unchanged **ChatML** template.
+
+### Models evaluated and rejected
+
+| Model | Why not |
+|---|---|
+| Qwen2.5-VL-7B | Superseded. Used for the zero-shot baseline (§10.1) and all §5 benchmarks, so those numbers are its. |
+| Qwen2.5-VL-3B | **Measured slower than the 7B** on a T4 — 36 layers vs 28, and depth dominates batch-1 latency (§5.4). |
+| **Qwen3.5-9B** | Multimodal and used by the #1 team, but **no unsloth 4-bit build exists**, and unsloth is what makes an 8B trainable in 16GB. The leaderboard gap to Qwen3-VL-8B is **0.0009** — a rewrite of the training path against noise. |
+| SigLIP gate | Never implemented. Real-time turned out to be achievable without it (§5.3), which demoted it from blocking to optional, and time went to Stage 2 instead. |
+| **Cosmos-Embed1-448p-anomaly-detection** | **Blocked, not rejected.** Purpose-built for VAD, one forward pass instead of autoregressive decode, and per-class probabilities natively from video-text cosine similarity. Its remote code needs `apply_chunking_to_forward`, removed in transformers 5.5, so it needs a pinned-transformers venv. `scripts/cosmos_infer.py` is written and ready. This is the most promising unexplored direction. |
+
+---
+
 ## 1. Data analysis — what actually drives the design
 
 ### 1.1 The central problem: train/test distribution mismatch
@@ -120,7 +151,7 @@ video. v1 got this wrong; see §7.1.
                  [1] Gate  (SigLIP encoder + linear head, 1–2 frames)  │
                  │      drops background; HIGH-RECALL operating point  │
                  ▼                                                    │
-                 [2] Small VLM  (Qwen2.5-VL 3B, LoRA, 4-bit, fp16)     │
+                 [2] Small VLM  (Qwen3-VL-8B, LoRA r=32, 4-bit, fp16)  │
                  │      → per-class scores from token logprobs         │
                  ▼                                                    │
                  [3] Temporal aggregator                               │
@@ -173,8 +204,8 @@ lenient. Re-run the sweep before changing any of these numbers.
 
 ### Stage 2 — Small VLM classifier
 
-- **Qwen2.5-VL 3B Instruct, 4-bit, LoRA, vision tower frozen**, **fp16** (T4 has no bf16).
-- 3B for the T4 target; 7B benchmarked as the accuracy fallback since leaderboard is priority.
+- **Qwen3-VL-8B-Instruct, 4-bit, LoRA r=32, vision tower frozen**, **fp16** (T4 has no
+  usable bf16 — see §5.4). Selection rationale and the models rejected are in §11.1.
 - **Output: minimal JSON** — `{"is_anomaly": bool, "class_name": str}`.
 - **Scores come from token logprobs**, not from the generated string. At the first decoded
   position of the class field we read the logprob of each of the 12 class tokens, giving a
@@ -357,10 +388,10 @@ than the 7B does in 28. "Smaller model = faster" does not hold at batch 1.
 
 | Parameter | Value | Why |
 |---|---|---|
-| Model | **Qwen2.5-VL-7B, 4-bit** | §5.4 — faster and stronger than 3B |
+| Model | **Qwen3-VL-8B, 4-bit, LoRA r=32** | §11.1 — the model every AI City Track-3 top team used |
 | Window / stride | **4s / 4s** | §Stage 0 — overlap is strictly dominated |
-| Frames per window | **8** | one frame per 0.5s; 4 frames leaves 1.33s gaps, and the median event is 5.3s with accidents ~1s |
-| Resolution cap | **256 tok/frame (588×336)** | leaderboard is the stated priority, so accuracy heads over the last of the latency |
+| Frames per window | **8 train / 4 at inference** | 8f measures 4.64 s/window = 116% of the real-time budget, so scored inference subsamples to 4 (§11.4) |
+| Resolution cap | **588×336 frames** | 252 tok/frame under Qwen2.5-VL geometry; **192 under Qwen3-VL** (patch 16) — see §11.1 |
 | Precision | **fp16** | §5.4 of the bf16 finding — emulated bf16 is 9× slower on SM75 |
 
 That is **4.65 s/window → ~65 min** for the whole public test set offline, which is fine.

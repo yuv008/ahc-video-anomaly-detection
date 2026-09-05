@@ -5,6 +5,9 @@ flooding, fighting, loitering, etc.) in drone/CCTV/dashcam video, in real time, 
 **small** vision-language model that can actually run on limited GPU capability across many
 feeds at once. Full brief: [docs/brief.md](docs/brief.md).
 
+**Models: see [docs/architecture.md §0](docs/architecture.md) — Qwen3-VL-8B 4-bit LoRA r=32 is the
+deployed classifier; no gate is built; Cosmos-Embed1 is blocked on a transformers version.**
+
 **Read [docs/architecture.md](docs/architecture.md) first** — it contains the data analysis
 that drives every design decision here, plus what an earlier design got wrong (§7) and the
 caveats that remain unresolved (§8).
@@ -59,8 +62,8 @@ data/processed/         derived: train.jsonl, synth/ dev set (gitignored)
 | Multi-scale inference | done — 4s event scale + 32s dwell scale |
 | Remote T4 via `google-colab-cli` | done — benchmarked, see decisions below |
 | Frame-export pipeline | done — parallel, train/serve resolution locked |
-| Stage 2 fine-tune | in progress |
-| Stage 1 gate | not started (no longer blocking — see below) |
+| Stage 2 fine-tune | **validated** — L1 0.329 → 0.421 from 80 samples |
+| Stage 1 gate | **not built** — real-time achieved without it (see below) |
 
 **Oracle ceiling (perfect model, current config): F1 0.978 @ IoU≥0.1** — L1 1.000,
 L2 0.941, L3 1.000. Any real score is bounded by this; re-run `oracle_ceiling.py` after
@@ -73,15 +76,15 @@ Everything here is measured, not estimated. Details and tables in
 
 | Decision | Value | Evidence |
 |---|---|---|
-| Model | **Qwen2.5-VL-7B** | measured *faster* than the 3B (2.23s vs 3.11s/window). The 3B is deeper/narrower — 36 layers vs 28 — and depth dominates latency at batch 1. Verified with an A→B→A control (0.3% drift). |
+| Model | **Qwen3-VL-8B, 4-bit, LoRA r=32** | every AI City Track-3 top team used a ~8B Qwen VLM. Qwen3.5 rejected: no unsloth 4-bit build, and the leaderboard gap is 0.0009. Qwen2.5-VL-3B measured *slower* than the 7B (36 layers vs 28 — depth dominates at batch 1, A→B→A verified, 0.3% drift). |
 | Precision | **fp16** | `is_bf16_supported()` returns True on a T4 but counts *emulation*: fp16 20.98 TFLOP/s vs bf16 2.28. Selecting bf16 would be ~9× slower. |
 | Resolution | **256 tok/frame** (588×336) | uncapped 720p is 1,196 tok/frame → 17.8s/window; capping is a **5× speedup**. |
 | Window / stride | **4s / 4s** (no overlap) | 50% overlap is strictly dominated: same F1, *worse* boundary IoU (0.747 → 0.840), 2× compute. |
-| Frames per window | **8** | one frame per 0.5s; accidents are ~1s events. |
+| Frames per window | **8 train / 4 infer** | 8f = 4.64 s/window on T4 = 116% of the real-time budget; 4f halves tokens and clears it. |
 
-Consequence: **real-time no longer requires the Stage-1 gate** — 4 configs clear the
-4s/window budget on a single feed. The gate is now a throughput multiplier for running many
-feeds per GPU, not a correctness dependency.
+Consequence: **real-time does not require the Stage-1 gate** — several configs clear the
+4s/window budget on a single feed, so no gate was built. Its remaining value is multiplying
+feeds per GPU: a throughput argument, not a correctness dependency.
 
 ## Quickstart
 
@@ -98,11 +101,11 @@ python scripts/build_synth_set.py --n-videos 40
 # what's the best achievable score with this window config?
 python scripts/oracle_ceiling.py
 
-# fine-tune (T4-safe precision is auto-detected)
-python -m ahc_vad.train.finetune_unsloth --output-dir outputs/qwen2.5-vl-3b-lora
+# fine-tune Qwen3-VL-8B (T4-safe precision auto-detected: fp16, since bf16 is emulated)
+python -m ahc_vad.train.finetune_unsloth --output-dir outputs/qwen3-vl-8b-lora
 
 # predict -> score
-python -m ahc_vad.infer.realtime_infer --model outputs/qwen2.5-vl-3b-lora --out preds.csv
+python -m ahc_vad.infer.realtime_infer --model outputs/qwen3-vl-8b-lora --out preds.csv
 python -m ahc_vad.eval.evaluate --predictions preds.csv --dataset-root data/raw
 
 # tune thresholds against the SYNTH dev set, not the 34-video public test set
@@ -119,10 +122,29 @@ T026,traffic_accident,12.0,38.5,0.91
 T026,fighting_or_violence,148.0,205.0,0.77
 ```
 
+## Results so far
+
+| | Level 1 score | classes emitted |
+|---|---|---|
+| Zero-shot Qwen2.5-VL-7B | 0.329 | 3 / 11 |
+| **Qwen3-VL-8B, checkpoint-20** (80 samples) | **0.421** | 5 / 11 |
+| Oracle ceiling (perfect window model) | 1.000 | 11 / 11 |
+
+Detection rate also corrected from badly under-firing (7.5% of windows against a true 29.4%)
+to well calibrated (26.8%). The zero-shot failure was *silence* on 8 of 11 classes, not
+confusion between them — which is exactly what the training windows fix.
+
 ## Next steps
 
-1. Per-class scores from token logprobs — Stage 3 hysteresis does nothing without them.
-2. Fine-tune the 3B baseline; score Level 1 first.
-3. Benchmark real seconds/window on T4 (3B vs 7B, 4/8/16 frames) before committing model size.
-4. Stage 1 SigLIP gate — required for the real-time claim, not for offline scoring (arch 5).
-5. Fit aggregator thresholds on `data/processed/synth`, never on public test.
+1. Finish training and re-score; `traffic_accident` regressed at checkpoint-20 and should be
+   re-checked at a later checkpoint.
+2. Full 865-window inference at **4 frames** — halves runtime and is the config that clears
+   the 4s real-time budget (8 frames measures 4.64s = 116% of it).
+3. Sweep aggregator thresholds against the official metric on `data/processed/synth`, never
+   on the 34-video public test set.
+4. **Cosmos-Embed1-448p-anomaly-detection** in a pinned-transformers venv — purpose-built for
+   VAD, one forward pass instead of autoregressive decode, per-class scores natively. Blocked
+   only on `apply_chunking_to_forward` being removed in transformers 5.5. Most promising
+   unexplored direction.
+5. Stage 1 gate, if many-feeds-per-GPU throughput becomes the goal — it is not needed for the
+   single-feed real-time claim (arch 5.3).
