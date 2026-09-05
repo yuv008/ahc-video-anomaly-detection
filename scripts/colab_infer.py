@@ -65,6 +65,13 @@ def main():
     ap.add_argument("--model", type=Path, default=Path("/content/qwen7b-lora"))
     ap.add_argument("--out", type=Path, default=Path("/content/window_verdicts.jsonl"))
     ap.add_argument("--limit", type=int, default=None)
+    # Subsample frames from the SAME packs rather than re-exporting. 8f/256tok measures
+    # 4.64 s/window on a T4 = 116% of the 4s real-time budget, so it does not qualify as
+    # real-time on limited GPU. Taking every other frame halves the vision tokens
+    # (768 vs 1536 under Qwen3-VL) and should clear the budget, while keeping resolution
+    # identical to training - a frame-count mismatch is far milder than a resolution one.
+    ap.add_argument("--frames", type=int, default=None,
+                    help="Use N evenly-spaced frames of the 8 available (default: all)")
     args = ap.parse_args()
 
     import time
@@ -108,6 +115,9 @@ def main():
         paths = sorted((frames_root / r["id"]).glob("f*.jpg"), key=lambda p: int(p.stem[1:]))
         if not paths:
             continue
+        if args.frames and args.frames < len(paths):
+            idx = [round(i * (len(paths) - 1) / (args.frames - 1)) for i in range(args.frames)]
+            paths = [paths[i] for i in dict.fromkeys(idx)]
         imgs = [Image.open(p).convert("RGB") for p in paths]
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
