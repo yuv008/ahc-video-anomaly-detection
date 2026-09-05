@@ -17,6 +17,9 @@ __pycache__/
 .venv/
 venv/
 
+# Hackathon organizer materials — not our work, keep local only
+*.pdf
+
 # Scratch helpers generated while driving the remote GPU session
 /gpucheck.py
 /bf16check.py
