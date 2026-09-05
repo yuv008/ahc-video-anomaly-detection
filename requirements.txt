@@ -1,0 +1,32 @@
+# Core
+torch>=2.3
+torchvision
+transformers>=4.49
+accelerate
+peft
+trl>=0.14
+bitsandbytes; platform_system != "Darwin"
+
+# Vision-language / video IO
+decord
+opencv-python-headless
+av
+pillow
+qwen-vl-utils
+
+# Fine-tuning
+unsloth; platform_system != "Windows"
+ms-swift
+
+# Data / eval
+pandas
+numpy
+scikit-learn
+tqdm
+
+# Dataset download
+gdown
+
+# Hosted API clients (for dev-time comparison / distillation data only)
+openai
+google-genai

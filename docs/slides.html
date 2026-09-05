@@ -1,0 +1,267 @@
+<title>Real-Time Video Anomaly Detection — AHC</title>
+
+<style>
+  :root {
+    --ground: #0E141C;
+    --surface: #161F2B;
+    --surface-2: #1D2836;
+    --line: #2A3849;
+    --ink: #E6EDF6;
+    --muted: #8494A8;
+    --amber: #FF8A3D;
+    --teal: #45C2A0;
+    --red: #FF5C5C;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground: #EFF2F6; --surface: #FFFFFF; --surface-2: #F5F7FA;
+      --line: #D3DBE5; --ink: #131A24; --muted: #5C6B7E;
+      --amber: #C25A0E; --teal: #157E62; --red: #C0392F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0E141C; --surface: #161F2B; --surface-2: #1D2836;
+    --line: #2A3849; --ink: #E6EDF6; --muted: #8494A8;
+    --amber: #FF8A3D; --teal: #45C2A0; --red: #FF5C5C;
+  }
+  :root[data-theme="light"] {
+    --ground: #EFF2F6; --surface: #FFFFFF; --surface-2: #F5F7FA;
+    --line: #D3DBE5; --ink: #131A24; --muted: #5C6B7E;
+    --amber: #C25A0E; --teal: #157E62; --red: #C0392F;
+  }
+
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: var(--sans);
+    margin: 0; padding: 24px;
+    display: flex; flex-direction: column; gap: 28px; align-items: center;
+  }
+  .slide {
+    width: 100%; max-width: 1180px; aspect-ratio: 16 / 9;
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 30px 36px; display: flex; flex-direction: column; gap: 14px;
+    container-type: inline-size; overflow: hidden;
+  }
+  @media (max-width: 900px) { .slide { aspect-ratio: auto; } }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--amber);
+  }
+  h1 { font-size: clamp(20px, 2.5cqi, 34px); line-height: 1.08; margin: 0;
+       letter-spacing: -.02em; text-wrap: balance; font-weight: 800; }
+  h1 .sub { display: block; color: var(--muted); font-weight: 500;
+            font-size: .46em; letter-spacing: 0; margin-top: 6px; }
+  h2 { font-size: 12px; font-family: var(--mono); font-weight: 600; margin: 0;
+       letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+  .chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .stage {
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-top: 2px solid var(--line); padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 5px; position: relative;
+  }
+  .stage.hot { border-top-color: var(--amber); }
+  .stage .n { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .stage .t { font-weight: 700; font-size: clamp(12px, 1.25cqi, 15px); }
+  .stage .d { font-size: clamp(10px, 1.02cqi, 12px); color: var(--muted); line-height: 1.4; }
+  .stage .cost {
+    font-family: var(--mono); font-size: 11px; color: var(--teal);
+    border-top: 1px dashed var(--line); padding-top: 5px; margin-top: auto;
+  }
+
+  .cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; flex: 1; min-height: 0; }
+  .panel { background: var(--surface-2); border: 1px solid var(--line); padding: 12px 14px;
+           display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+
+  table { border-collapse: collapse; width: 100%; font-size: clamp(10px, 1.02cqi, 12.5px); }
+  th { text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 600;
+       text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
+       padding: 0 8px 5px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .win { color: var(--teal); } .bad { color: var(--red); } .hi { color: var(--amber); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .kpi { background: var(--surface-2); border: 1px solid var(--line);
+         border-left: 2px solid var(--amber); padding: 9px 11px; }
+  .kpi .v { font-family: var(--mono); font-size: clamp(15px, 1.85cqi, 23px);
+            font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi .k { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+
+  .tl { display: flex; flex-direction: column; gap: 7px; }
+  .row { display: grid; grid-template-columns: 92px 1fr; gap: 9px; align-items: center; }
+  .row .lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: right; }
+  .bar { height: 15px; background: var(--surface); border: 1px solid var(--line);
+         position: relative; overflow: hidden; }
+  .seg { position: absolute; top: 0; bottom: 0; }
+  .seg.ev { background: var(--amber); }
+  .seg.pr { background: color-mix(in srgb, var(--teal) 72%, transparent); }
+  .caption { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .caption b { color: var(--ink); font-weight: 600; }
+  strong.k { color: var(--ink); }
+  footer { display: flex; justify-content: space-between; align-items: baseline;
+           font-family: var(--mono); font-size: 10px; color: var(--muted);
+           border-top: 1px solid var(--line); padding-top: 8px; }
+</style>
+
+<section class="slide">
+  <div class="eyebrow">AHC Visual Intelligence Hackathon · Slide 1 of 2</div>
+  <h1>Anomalies are contextual, so the pipeline is temporal
+    <span class="sub">A small VLM decides <em>windows</em>; a cheap aggregator decides <em>events</em>. Nothing large runs at inference.</span>
+  </h1>
+
+  <div class="chain">
+    <div class="stage">
+      <span class="n">STAGE 0</span>
+      <span class="t">Window sampler</span>
+      <span class="d">4 s windows, no overlap, 8 frames each. Second 32 s pass for classes defined by persistence.</span>
+      <span class="cost">865 windows / 56 min video</span>
+    </div>
+    <div class="stage">
+      <span class="n">STAGE 1</span>
+      <span class="t">Gate <em>(optional)</em></span>
+      <span class="d">Frozen SigLIP + linear head on 1–2 frames. Drops background before the VLM sees it.</span>
+      <span class="cost">throughput multiplier</span>
+    </div>
+    <div class="stage hot">
+      <span class="n">STAGE 2</span>
+      <span class="t">Qwen2.5-VL 7B · 4-bit</span>
+      <span class="d">LoRA, vision tower frozen. Emits minimal JSON — no prose, because the labels <em>are</em> the prose.</span>
+      <span class="cost">4.65 s / window on T4</span>
+    </div>
+    <div class="stage hot">
+      <span class="n">STAGE 3</span>
+      <span class="t">Temporal aggregator</span>
+      <span class="d">Hysteresis on P(anomaly) from token logprobs, then merge. <b>The model never predicts timestamps.</b></span>
+      <span class="cost">CPU, free to re-tune</span>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Why the aggregator owns the timestamps</h2>
+      <div class="tl">
+        <div class="row"><span class="lbl">train clip</span>
+          <div class="bar"><span class="seg ev" style="left:0;right:0"></span></div></div>
+        <div class="row"><span class="lbl">test L2/L3</span>
+          <div class="bar">
+            <span class="seg ev" style="left:8%;width:5%"></span>
+            <span class="seg ev" style="left:27%;width:8%"></span>
+            <span class="seg ev" style="left:62%;width:4%"></span>
+            <span class="seg ev" style="left:80%;width:6%"></span>
+          </div></div>
+        <div class="row"><span class="lbl">our windows</span>
+          <div class="bar">
+            <span class="seg pr" style="left:7%;width:7%"></span>
+            <span class="seg pr" style="left:26%;width:10%"></span>
+            <span class="seg pr" style="left:61%;width:6%"></span>
+            <span class="seg pr" style="left:79%;width:8%"></span>
+          </div></div>
+      </div>
+      <p class="caption">Training clips are pre-trimmed: the event fills <b>99.9%</b> of the median clip. Real
+      Level-2/3 footage is <b>7.7%</b> anomaly. A model trained naively learns “a clip was shown to me ⇒
+      something is wrong” and fires continuously on ordinary traffic. So window labels come from
+      <b>temporal overlap</b>, not the folder a clip sits in — which recovered <b>1,604</b> genuine
+      background windows from inside anomaly clips.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Built to be measured, not guessed</h2>
+      <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
+        <div class="kpi"><div class="v">0.952</div><div class="k">oracle ceiling under the official metric — the cap this window config allows</div></div>
+        <div class="kpi"><div class="v">4.65<span style="font-size:.6em">s</span></div><div class="k">per window, 7B 4-bit, measured on a real T4</div></div>
+        <div class="kpi"><div class="v">3,173</div><div class="k">clips → 29,732 labelled windows</div></div>
+        <div class="kpi"><div class="v">160<span style="font-size:.6em">min</span></div><div class="k">synthetic long-form dev set, in 124 KB (manifest, no video rendered)</div></div>
+      </div>
+      <p class="caption">An <b>oracle harness</b> runs a perfect window-level model through the real
+      aggregator and scorer. It separates “the model is weak” from “the config throws events away
+      before the model gets a vote” — and it caught a bug that silently cost <b>L2 recall 0.28 → 0.96</b>.</p>
+    </div>
+  </div>
+
+  <footer><span>Qwen2.5-VL 7B · 4-bit · LoRA · fp16 · Tesla T4 16 GB</span><span>no hosted model at inference</span></footer>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Slide 2 of 2 · What the measurements changed</div>
+  <h1>Every default we inherited was wrong on this hardware
+    <span class="sub">Six checks, each one reversing a decision we had already made.</span>
+  </h1>
+
+  <div class="panel" style="flex:1; min-height:0;">
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th style="width:20%">We assumed</th><th style="width:34%">Measured</th>
+        <th style="width:16%">Δ</th><th>Why it happens</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>bf16 is fine, it’s modern</td>
+          <td class="num">fp16 <span class="win">20.98</span> vs bf16 <span class="bad">2.28</span> TFLOP/s</td>
+          <td class="num bad">9× slower</td>
+          <td><code>is_bf16_supported()</code> returns <b>True</b> on a T4 — it counts <em>emulation</em>. Emulated bf16 is slower than fp32.</td>
+        </tr>
+        <tr>
+          <td>Frame count is the latency dial</td>
+          <td class="num">1,196 → <span class="win">252</span> tokens/frame</td>
+          <td class="num win">5× faster</td>
+          <td>Resolution is. One 720p frame costs 1,196 vision tokens by default; 8 frames = 9,742 tokens = 17.8 s/window.</td>
+        </tr>
+        <tr>
+          <td>50% window overlap buys precision</td>
+          <td class="num">IoU <span class="bad">0.747</span> → <span class="win">0.840</span></td>
+          <td class="num win">½ the compute</td>
+          <td>Overlap <em>widens</em> the aggregated span past the true event. Same F1, worse boundaries, twice the cost.</td>
+        </tr>
+        <tr>
+          <td>The 3B is the fast one</td>
+          <td class="num">3B <span class="bad">3.11</span> s vs 7B <span class="win">2.23</span> s</td>
+          <td class="num win">7B wins twice</td>
+          <td>Same vision tower; the 3B is <b>36 layers vs 28</b>. At batch 1 depth dominates FLOPs and narrow matmuls starve the GPU.</td>
+        </tr>
+        <tr>
+          <td>Dwell rules from train durations</td>
+          <td class="num">train ≡ 30 s · test <span class="hi">2.6–37.6 s</span></td>
+          <td class="num bad">would miss 2/5</td>
+          <td>Train <em>loitering</em> is always 30 s because that is how clips were <b>cut</b>, not how long people loiter.</td>
+        </tr>
+        <tr>
+          <td>Optimise F1</td>
+          <td class="num">1 false alarm ⇒ video scores <span class="bad">0</span></td>
+          <td class="num hi">precision ≫ recall</td>
+          <td>Official metric is per-video. On a normal L2/3 video, predicting <em>anything</em> zeroes it. Silence beats a guess.</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="cols" style="flex:0 0 auto">
+    <div class="panel">
+      <h2>What we would do next</h2>
+      <p class="caption">
+        <b>Timing is the ceiling, not classification.</b> Even a perfect window model scores
+        0.78 on L2 timing because 4 s boundaries cannot align to real events — boundary
+        refinement is the remaining headroom.
+        <b>Level 3 stays out-of-distribution:</b> its events reach 125 s while no training clip
+        exceeds 30 s, and stitching cannot manufacture that.
+      </p>
+    </div>
+    <div class="panel">
+      <h2>Honest limitations</h2>
+      <p class="caption">
+        Colab reclaimed two GPU sessions mid-run, so jobs became detached and resumable.
+        Aggregator weights for the unpublished part of the metric are a documented default —
+        rankings between configs are reliable, absolute scores indicative. Public test is 34
+        videos; one video ≈ 3%, so small deltas are noise.
+      </p>
+    </div>
+  </div>
+
+  <footer><span>windows labelled by temporal overlap · scores from token logprobs · thresholds fit on synthetic long-form data</span><span>never on the public test set</span></footer>
+</section>

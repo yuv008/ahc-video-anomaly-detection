@@ -1,0 +1,12 @@
+[project]
+name = "ahc-vad"
+version = "0.1.0"
+description = "AHC Visual Intelligence Hackathon - real-time drone video anomaly detection"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
