@@ -675,3 +675,36 @@ volume. On an 80GB card both fit and this constraint disappears.
 re-upload. Lightning Studios keep files on a persistent volume, so a stopped Studio costs
 minutes of compute rather than half an hour of transfer. This is the single biggest
 reliability difference between the two platforms for a workload of this shape.
+
+### 11.4 Fine-tuning validated at checkpoint-20
+
+Qwen3-VL-8B, LoRA r=32, after only **20 steps / 80 training samples**, scored on the 24
+Level-1 videos with the official metric:
+
+| | zero-shot | checkpoint-20 | Δ |
+|---|---|---|---|
+| anomaly-vs-normal accuracy | 0.458 | **0.542** | +0.084 |
+| class accuracy | 0.200 | **0.300** | +0.100 |
+| **Level 1 score** | **0.329** | **0.421** | **+0.092** |
+| classes ever emitted | 3/11 | 5/11 | +2 |
+| anomaly window rate | 7.5% | ~30% | true rate 29.4% |
+
+`traffic_congestion`, `fighting_or_violence` and `smoke` are now produced — classes the
+zero-shot model never emitted once. The detection rate also moved from badly under-firing
+(7.5% against a true 29.4%) to approximately calibrated.
+
+**Why the trajectory should continue:** at 80 samples, with `normal` at 60% of the mix, the
+model has seen roughly 3 examples per anomaly class. The six classes still never emitted are
+largely ones it has barely encountered. The full 300 steps is ~1,200 samples ≈ 44 per class,
+and the training subset was stratified to carry 56 examples of each previously-missing class.
+
+**One regression to watch:** `traffic_accident` was emitted zero-shot but not at
+checkpoint-20 — early-training instability on a class with few samples seen so far. Re-check
+at a later checkpoint rather than assuming it resolves.
+
+**Runtime caveat discovered here:** Qwen3-VL-8B measures **5.02 s/window** on the T4 at
+8 frames / 256 tok, against 4.24 s for Qwen2.5-VL-7B. Unsloth reports
+`Offloading embeddings to RAM to save 1.16 GB`, so every forward pass pays a PCIe transfer.
+At 125% of the 4 s real-time budget this configuration is **not** real-time on limited GPU;
+the lighter 4 frames / 128 tok configuration is expected to clear it and must be measured
+before the real-time claim is made for this model.
