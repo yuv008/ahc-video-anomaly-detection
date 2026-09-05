@@ -16,7 +16,7 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/qwen2.5-vl-7b-lora"))
     # 7B over 3B: measured FASTER on a T4 despite being larger (the 3B is deeper/narrower -
     # 36 layers vs 28 - and depth dominates latency at batch 1). See architecture 5.4.
-    parser.add_argument("--base-model", default="unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit")
+    parser.add_argument("--base-model", default="unsloth/Qwen3-VL-8B-Instruct-unsloth-bnb-4bit")
     parser.add_argument("--num-frames", type=int, default=8)
     parser.add_argument("--max-steps", type=int, default=300)
     parser.add_argument("--lr", type=float, default=2e-4)

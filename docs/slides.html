@@ -170,16 +170,18 @@
     </div>
 
     <div class="panel">
-      <h2>Built to be measured, not guessed</h2>
+      <h2>Where the score actually goes</h2>
       <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
-        <div class="kpi"><div class="v">0.952</div><div class="k">oracle ceiling under the official metric — the cap this window config allows</div></div>
-        <div class="kpi"><div class="v">4.65<span style="font-size:.6em">s</span></div><div class="k">per window, 7B 4-bit, measured on a real T4</div></div>
-        <div class="kpi"><div class="v">3,173</div><div class="k">clips → 29,732 labelled windows</div></div>
-        <div class="kpi"><div class="v">160<span style="font-size:.6em">min</span></div><div class="k">synthetic long-form dev set, in 124 KB (manifest, no video rendered)</div></div>
+        <div class="kpi"><div class="v">0.964</div><div class="k">oracle ceiling — perfect window model through the real aggregator and scorer</div></div>
+        <div class="kpi" style="border-left-color:var(--red)"><div class="v">0.329</div><div class="k">zero-shot Level 1, before any fine-tuning</div></div>
+        <div class="kpi"><div class="v">0<span style="font-size:.6em"> FA</span></div><div class="k">false alarms on all normal videos — one would zero that video outright</div></div>
+        <div class="kpi"><div class="v">13<span style="font-size:.6em">/20</span></div><div class="k">anomalies missed zero-shot, and the misses are systematic</div></div>
       </div>
-      <p class="caption">An <b>oracle harness</b> runs a perfect window-level model through the real
-      aggregator and scorer. It separates “the model is weak” from “the config throws events away
-      before the model gets a vote” — and it caught a bug that silently cost <b>L2 recall 0.28 → 0.96</b>.</p>
+      <p class="caption">Zero-shot catches what <b>looks</b> dramatic — fire, flood — and misses
+      almost every <b>contextual</b> class: congestion, stalled vehicle, blocking, wrong-way,
+      loitering, fighting. Exactly the distinction the brief calls the hard part, and exactly
+      what the training windows teach. The <b>gap between 0.329 and 0.964 is the classifier</b>,
+      not the pipeline: the plumbing already reaches the ceiling with a perfect model.</p>
     </div>
   </div>
 
@@ -189,7 +191,7 @@
 <section class="slide">
   <div class="eyebrow">Slide 2 of 2 · What the measurements changed</div>
   <h1>Every default we inherited was wrong on this hardware
-    <span class="sub">Six checks, each one reversing a decision we had already made.</span>
+    <span class="sub">Seven checks, each one reversing a decision we had already made.</span>
   </h1>
 
   <div class="panel" style="flex:1; min-height:0;">
@@ -231,10 +233,16 @@
           <td>Train <em>loitering</em> is always 30 s because that is how clips were <b>cut</b>, not how long people loiter.</td>
         </tr>
         <tr>
-          <td>Optimise F1</td>
-          <td class="num">1 false alarm ⇒ video scores <span class="bad">0</span></td>
-          <td class="num hi">precision ≫ recall</td>
-          <td>Official metric is per-video. On a normal L2/3 video, predicting <em>anything</em> zeroes it. Silence beats a guess.</td>
+          <td>Optimise F1 at IoU 0.1</td>
+          <td class="num">official gate is IoU <span class="hi">0.5</span>, per-video</td>
+          <td class="num bad">wrong objective</td>
+          <td>1 false alarm on a normal L2/3 video scores it <b>0</b>. Silence beats a guess, and we were tuning the wrong number.</td>
+        </tr>
+        <tr>
+          <td>Window edges are the event edges</td>
+          <td class="num">ceiling <span class="bad">0.952</span> → <span class="win">0.964</span></td>
+          <td class="num win">L3 match 0.94→1.00</td>
+          <td>A window fires because the event is <em>somewhere inside</em> it — in expectation, its middle. Edges over-cover; a 2.6s event on a 4s grid caps at IoU <b>0.32</b> and can never match.</td>
         </tr>
       </tbody>
     </table>

@@ -84,7 +84,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--export-dir", type=Path, default=Path("/content/export_train"))
     ap.add_argument("--output-dir", type=Path, default=Path("/content/qwen7b-lora"))
-    ap.add_argument("--base-model", default="unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit")
+    # Qwen3-VL-8B, not Qwen2.5-VL-7B. Every top team on the AI City 2026 Track-3
+    # leaderboard used Qwen3-VL-8B / Qwen3.5 (0.679, 0.678, 0.670); we had anchored on
+    # 2.5 only because that is what was benchmarked first.
+    # NOTE: Qwen3-VL uses patch 16 (1024 px/token) vs 2.5-VL patch 14 (784), so the same
+    # 588x336 frame costs 192 tokens here instead of 252 - cheaper per frame. It is also
+    # 36 layers vs 28, and depth dominates batch-1 latency (architecture 5.4), so net
+    # speed must be MEASURED, not assumed. Chat template is still ChatML, so the
+    # response-masking markers below are unchanged.
+    ap.add_argument("--base-model", default="unsloth/Qwen3-VL-8B-Instruct-unsloth-bnb-4bit")
     ap.add_argument("--max-steps", type=int, default=300)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--grad-accum", type=int, default=4)
@@ -128,7 +136,18 @@ def main():
     trainer = SFTTrainer(
         model=model,
         tokenizer=processor,
-        data_collator=UnslothVisionDataCollator(model, processor, train_on_responses_only=True),
+        # train_on_responses_only masks the prompt so loss is computed only on the answer -
+        # important here, because the system prompt is long and identical on every example,
+        # so training on it would spend most of the gradient re-learning a constant.
+        # It REQUIRES the chat-template markers that delimit the response; without them
+        # unsloth_zoo asserts (instruction_part/response_part must be str). Qwen2.5-VL uses
+        # ChatML, so the assistant turn opens with "<|im_start|>assistant\n".
+        data_collator=UnslothVisionDataCollator(
+            model, processor,
+            train_on_responses_only=True,
+            instruction_part="<|im_start|>user\n",
+            response_part="<|im_start|>assistant\n",
+        ),
         train_dataset=dataset,
         args=SFTConfig(
             per_device_train_batch_size=1,

@@ -39,3 +39,8 @@ venv/
 /peek.py
 /handoff.py
 /chunkcheck.py
+/launch_ckpt_eval.py
+/polleval.py
+/tail_train.py
+/tracelog.py
+/score_l1.py
