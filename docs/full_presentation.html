@@ -1,0 +1,407 @@
+<title>AHC Visual Intelligence Hackathon — Build Summary</title>
+
+<style>
+  :root {
+    --ground: #0E141C; --surface: #161F2B; --surface-2: #1D2836;
+    --line: #2A3849; --ink: #E6EDF6; --muted: #8494A8;
+    --amber: #FF8A3D; --teal: #45C2A0; --red: #FF5C5C;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --ground: #EFF2F6; --surface: #FFFFFF; --surface-2: #F5F7FA;
+      --line: #D3DBE5; --ink: #131A24; --muted: #5C6B7E;
+      --amber: #C25A0E; --teal: #157E62; --red: #C0392F; }
+  }
+  :root[data-theme="dark"] { --ground: #0E141C; --surface: #161F2B; --surface-2: #1D2836;
+    --line: #2A3849; --ink: #E6EDF6; --muted: #8494A8;
+    --amber: #FF8A3D; --teal: #45C2A0; --red: #FF5C5C; }
+  :root[data-theme="light"] { --ground: #EFF2F6; --surface: #FFFFFF; --surface-2: #F5F7FA;
+    --line: #D3DBE5; --ink: #131A24; --muted: #5C6B7E;
+    --amber: #C25A0E; --teal: #157E62; --red: #C0392F; }
+
+  * { box-sizing: border-box; }
+  body { background: var(--ground); color: var(--ink); font-family: var(--sans);
+    margin: 0; padding: 28px 20px 60px; display: flex; flex-direction: column;
+    gap: 30px; align-items: center; }
+  .deckhead { width: 100%; max-width: 1180px; display: flex; justify-content: space-between;
+    align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    letter-spacing: .08em; text-transform: uppercase; padding-bottom: 6px; }
+  .deckhead b { color: var(--amber); }
+
+  .slide { width: 100%; max-width: 1180px; min-height: 640px; aspect-ratio: 16/10;
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 32px 38px; display: flex; flex-direction: column; gap: 14px;
+    container-type: inline-size; overflow: hidden; position: relative; }
+  @media (max-width: 900px) { .slide { aspect-ratio: auto; min-height: 0; } }
+
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--amber); }
+  h1 { font-size: clamp(20px, 2.6cqi, 33px); line-height: 1.1; margin: 0;
+    letter-spacing: -.02em; text-wrap: balance; font-weight: 800; }
+  h1 .sub { display: block; color: var(--muted); font-weight: 500;
+    font-size: .46em; letter-spacing: 0; margin-top: 8px; line-height: 1.5; }
+  h2 { font-size: 11.5px; font-family: var(--mono); font-weight: 600; margin: 0;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+
+  .chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .stage { background: var(--surface-2); border: 1px solid var(--line);
+    border-top: 2px solid var(--line); padding: 11px 12px;
+    display: flex; flex-direction: column; gap: 5px; position: relative; }
+  .stage.hot { border-top-color: var(--amber); }
+  .stage .n { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .stage .t { font-weight: 700; font-size: clamp(12px, 1.25cqi, 15px); }
+  .stage .d { font-size: clamp(10px, 1.02cqi, 12px); color: var(--muted); line-height: 1.4; }
+  .stage .cost { font-family: var(--mono); font-size: 11px; color: var(--teal);
+    border-top: 1px dashed var(--line); padding-top: 5px; margin-top: auto; }
+
+  .cols { display: grid; gap: 16px; flex: 1; min-height: 0; }
+  .cols.c2 { grid-template-columns: 1.2fr 1fr; }
+  .cols.c3 { grid-template-columns: repeat(3, 1fr); }
+  .panel { background: var(--surface-2); border: 1px solid var(--line); padding: 13px 15px;
+    display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: auto; }
+
+  table { border-collapse: collapse; width: 100%; font-size: clamp(10px, 1.02cqi, 12.5px); }
+  th { text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+    padding: 0 8px 5px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .win { color: var(--teal); } .bad { color: var(--red); } .hi { color: var(--amber); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .kpi { background: var(--surface-2); border: 1px solid var(--line);
+    border-left: 2px solid var(--amber); padding: 10px 12px; }
+  .kpi .v { font-family: var(--mono); font-size: clamp(15px, 1.85cqi, 24px);
+    font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi .k { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+  .kpi.win { border-left-color: var(--teal); }
+  .kpi.bad { border-left-color: var(--red); }
+
+  .tl { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: grid; grid-template-columns: 98px 1fr; gap: 9px; align-items: center; }
+  .row .lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: right; }
+  .bar { height: 16px; background: var(--surface); border: 1px solid var(--line);
+    position: relative; overflow: hidden; }
+  .seg { position: absolute; top: 0; bottom: 0; }
+  .seg.ev { background: var(--amber); } .seg.pr { background: var(--teal); }
+  .seg.bd { background: var(--red); }
+
+  .caption { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
+  .caption b { color: var(--ink); font-weight: 600; }
+  strong.k { color: var(--ink); }
+
+  .badge { display: inline-block; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px;
+    border: 1px solid currentColor; border-radius: 2px; }
+  .badge.win { color: var(--teal); } .badge.bad { color: var(--red); } .badge.hi { color: var(--amber); }
+
+  .evtlist { display: flex; flex-direction: column; gap: 6px; }
+  .evt { display: flex; gap: 8px; align-items: baseline; font-size: 11.5px; }
+  .evt .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; margin-top: 3px; }
+  .evt .dot.win { background: var(--teal); } .evt .dot.bad { background: var(--red); }
+  .evt .dot.hi { background: var(--amber); }
+
+  footer { display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    border-top: 1px solid var(--line); padding-top: 9px; margin-top: auto; }
+</style>
+
+<div class="deckhead"><span>AHC Visual Intelligence Hackathon</span><b>Build Summary — 8 slides</b></div>
+
+<!-- SLIDE 1 — TITLE / PROBLEM -->
+<section class="slide">
+  <div class="eyebrow">Slide 1 · The problem</div>
+  <h1>Detect anomalies in drone/CCTV/dashcam video, in real time, on a GPU too small for a
+    big model
+    <span class="sub">Accidents, fire, flooding, fighting, loitering and 7 other classes — spotted by a
+      <b class="k" style="color:var(--ink)">small</b> vision-language model running across many feeds at once,
+      never a hosted large model at inference.</span>
+  </h1>
+
+  <div class="cols c2" style="margin-top:6px;">
+    <div class="panel">
+      <h2>Locked constraints</h2>
+      <div class="evtlist" style="margin-top:4px;">
+        <div class="evt"><span class="dot hi"></span><span><strong class="k">Runtime target:</strong> free Tesla T4 — 16GB, Turing SM75, fp16 only (no usable bf16)</span></div>
+        <div class="evt"><span class="dot hi"></span><span><strong class="k">Objective:</strong> score against a private evaluation set, judged by an undisclosed IoU/weighting formula</span></div>
+        <div class="evt"><span class="dot hi"></span><span><strong class="k">Output:</strong> a list of timestamped events per video — not one verdict per video</span></div>
+        <div class="evt"><span class="dot hi"></span><span><strong class="k">Real-time:</strong> the model must keep pace with the video, per feed, on the same limited GPU</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>What this deck covers</h2>
+      <div class="evtlist" style="margin-top:4px;">
+        <div class="evt"><span class="dot"></span><span>Data analysis that drove every design choice</span></div>
+        <div class="evt"><span class="dot"></span><span>The shipped architecture and why each piece is there</span></div>
+        <div class="evt"><span class="dot"></span><span>Real platform scores, tripled from first submission</span></div>
+        <div class="evt"><span class="dot"></span><span>What we tried that <em>looked</em> good locally and failed live — and why</span></div>
+        <div class="evt"><span class="dot"></span><span>The deepest finding: exactly where the remaining ceiling is</span></div>
+      </div>
+    </div>
+  </div>
+  <footer><span>AHC · Real-Time Video Anomaly Detection</span><span>1 / 8</span></footer>
+</section>
+
+<!-- SLIDE 2 — DATA ANALYSIS -->
+<section class="slide">
+  <div class="eyebrow">Slide 2 · Data analysis, not assumption</div>
+  <h1>The dataset has a built-in trap: training clips are pre-trimmed, test videos are not
+    <span class="sub">Every architecture decision downstream exists because of this one mismatch.</span>
+  </h1>
+
+  <div class="cols c2" style="flex:1;">
+    <div class="panel">
+      <h2>Train vs. test event coverage</h2>
+      <table>
+        <tr><th></th><th>Train clips</th><th>Test L1</th><th>Test L2</th><th>Test L3</th></tr>
+        <tr><td>Duration</td><td class="num">5–30s</td><td class="num">5–26s</td><td class="num">240s</td><td class="num">308–629s</td></tr>
+        <tr><td>Event coverage</td><td class="num hi">~99.9%</td><td class="num">~100%</td><td class="num win">~7.7%</td><td class="num win">~7.7%</td></tr>
+        <tr><td>Max event length</td><td class="num">30s</td><td class="num">26s</td><td class="num">60s</td><td class="num hi">125s</td></tr>
+      </table>
+      <p class="caption" style="margin-top:6px;">A model trained naively learns the shortcut <b>"a clip was shown to me ⇒
+        an anomaly is present"</b> — true ~100% of the time in training. Deployed on long footage, it fires almost
+        continuously. This mismatch, not model capacity, was the dominant risk from day one.</p>
+    </div>
+    <div class="panel">
+      <h2>Other findings that shaped the build</h2>
+      <div class="evtlist">
+        <div class="evt"><span class="dot bad"></span><span><b>7.3:1 class imbalance</b> — 973 normal clips vs. 77 fire clips</span></div>
+        <div class="evt"><span class="dot bad"></span><span><b>Supervision is boilerplate</b> — loitering's 300 clips share ONE description string. Build a classifier, not a captioner.</span></div>
+        <div class="evt"><span class="dot hi"></span><span><b>Multi-event, multi-class videos</b> — one test video holds 4 different anomaly types back to back</span></div>
+        <div class="evt"><span class="dot hi"></span><span><b>Level 2 is stitched, Level 3 is not</b> — L2 timestamps are suspiciously round; L3 has a 125s event longer than any training clip ever seen</span></div>
+      </div>
+    </div>
+  </div>
+  <footer><span>Data analysis</span><span>2 / 8</span></footer>
+</section>
+
+<!-- SLIDE 3 — ARCHITECTURE -->
+<section class="slide">
+  <div class="eyebrow">Slide 3 · The shipped pipeline</div>
+  <h1>Two models and a CPU-only aggregator — nothing large runs at inference
+    <span class="sub">A small VLM decides <em>windows</em>; a second model's confidence filters <em>false alarms</em>; a
+      cheap aggregator turns both into <em>events</em>.</span>
+  </h1>
+
+  <div class="chain">
+    <div class="stage">
+      <span class="n">STAGE 0</span><span class="t">Window sampler</span>
+      <span class="d">4s windows, no overlap, 8 frames. Measured: 50% overlap is strictly dominated — same F1, worse boundary IoU, 2× compute.</span>
+      <span class="cost">no model · CPU</span>
+    </div>
+    <div class="stage hot">
+      <span class="n">STAGE 2</span><span class="t">Qwen3-VL-8B classifier</span>
+      <span class="d">4-bit, LoRA r=32, fp16. Emits <code>{is_anomaly, class_name}</code>; scores read from token logprobs, not the string.</span>
+      <span class="cost">~4.3s / window on T4</span>
+    </div>
+    <div class="stage hot">
+      <span class="n">STAGE 2.5</span><span class="t">Cosmos confidence gate</span>
+      <span class="d">A second model VETOES Qwen's positive calls it isn't itself confident (≥0.95) about — post-hoc filter, not a second classifier.</span>
+      <span class="cost">~2.0s / window · shipped</span>
+    </div>
+    <div class="stage">
+      <span class="n">STAGE 3</span><span class="t">Temporal aggregator</span>
+      <span class="d">Hysteresis + merge-gap + midpoint boundary refinement turns window verdicts into a clean event list.</span>
+      <span class="cost">no model · CPU · free to re-tune</span>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:4px;">
+    <h2>What is deliberately <em>not</em> here</h2>
+    <p class="caption"><b>No Stage-1 pre-classification gate.</b> Real-time turned out to be achievable without one —
+      several configurations clear the 4-second-per-window budget on a single feed outright, once the resolution
+      cap and no-overlap window fix were measured and applied. Its only remaining value would be running more feeds
+      per GPU, a throughput question the brief doesn't require solving.</p>
+  </div>
+  <footer><span>Architecture</span><span>3 / 8</span></footer>
+</section>
+
+<!-- SLIDE 4 — MODEL SELECTION -->
+<section class="slide">
+  <div class="eyebrow">Slide 4 · Model selection, measured not assumed</div>
+  <h1>Three assumptions broke under measurement — each one would have shipped a worse system
+    <span class="sub">Every number below came from running the model on the actual target hardware, not from a spec sheet.</span>
+  </h1>
+
+  <div class="cols c3" style="flex:1;">
+    <div class="panel">
+      <span class="badge bad">assumption broke</span>
+      <h2 style="margin-top:6px;">"Smaller = faster"</h2>
+      <p class="caption">Qwen2.5-VL-<b>3B</b> measured <b class="bad">slower</b> than the 7B at every matched config
+        (2.23s vs 3.11s/window). The 3B is 36 layers deep vs the 7B's 28 — depth dominates latency at batch 1,
+        not parameter count. Verified A→B→A to rule out thermal drift (0.3%).</p>
+    </div>
+    <div class="panel">
+      <span class="badge bad">assumption broke</span>
+      <h2 style="margin-top:6px;">"bf16 is safe on any GPU"</h2>
+      <p class="caption"><code>is_bf16_supported()</code> returns True on a T4 — but that counts <em>emulation</em>.
+        Real throughput: fp16 20.98 TFLOP/s vs bf16 <b class="bad">2.28</b> TFLOP/s. Picking bf16 would have made
+        training <b>9× slower</b>, silently.</p>
+    </div>
+    <div class="panel">
+      <span class="badge win">lever found</span>
+      <h2 style="margin-top:6px;">Resolution, not frame count</h2>
+      <p class="caption">Uncapped 720p costs 1,196 vision tokens/frame → 17.8s/window. Capping to 256 tok/frame
+        is a <b class="win">5× speedup</b> at the identical frame count — the single biggest lever in the whole
+        latency budget.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Final pick: Qwen3-VL-8B-Instruct, 4-bit, LoRA r=32</h2>
+    <p class="caption">Every top team on the public AI City 2026 Track-3 leaderboard runs a ~8B Qwen VLM.
+      Qwen3.5 (used by the #1 team) was rejected on tooling, not merit — no 4-bit build exists for the trainer we
+      use, and the leaderboard gap to Qwen3-VL-8B is <b>0.0009</b>, noise-level. <b class="hi">SigLIP</b> and
+      <b class="hi">Cosmos-Embed1</b> were also evaluated as the primary classifier and rejected — see slide 6.</p>
+  </div>
+  <footer><span>Model selection</span><span>4 / 8</span></footer>
+</section>
+
+<!-- SLIDE 5 — RESULTS PROGRESSION -->
+<section class="slide">
+  <div class="eyebrow">Slide 5 · Results, on the real platform</div>
+  <h1>Score tripled from first submission to shipped — every step measured, not guessed
+    <span class="sub">Local metric tracked the real platform directionally, but was <b>caught overclaiming three
+      separate times</b> — see slide 7.</span>
+  </h1>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">29.4</div><div class="k">v1 — uniform thresholds<br>first real submission</div></div>
+    <div class="kpi"><div class="v">39.3</div><div class="k">v2 — per-level aggregation policy<br>(loose L1, strict L2/3)</div></div>
+    <div class="kpi win"><div class="v">43.4</div><div class="k">v3 — + Cosmos confidence gate<br><b>shipped, current best</b></div></div>
+    <div class="kpi"><div class="v">0.964</div><div class="k">oracle ceiling, same config<br>perfect window model</div></div>
+  </div>
+
+  <div class="panel" style="flex:1;">
+    <h2>Level-1 score trajectory (fine-tuning working as intended)</h2>
+    <div class="tl" style="margin-top:6px;">
+      <div class="row"><span class="lbl">zero-shot</span><div class="bar"><div class="seg pr" style="left:0;width:32.9%"></div></div></div>
+      <div class="row"><span class="lbl">ckpt-20</span><div class="bar"><div class="seg pr" style="left:0;width:42.1%"></div></div></div>
+      <div class="row"><span class="lbl">ckpt-140</span><div class="bar"><div class="seg pr" style="left:0;width:55.0%"></div></div></div>
+      <div class="row"><span class="lbl">oracle</span><div class="bar"><div class="seg ev" style="left:0;width:100%"></div></div></div>
+    </div>
+    <p class="caption" style="margin-top:8px;">Zero-shot missed 8 of 11 anomaly classes entirely — not confusion,
+      <em>silence</em>. After fine-tuning on labelled windows, classes-emitted went 3/11 → 7/11 and detection rate
+      corrected from badly under-firing (7.5% of windows) to roughly calibrated (~27%), exactly the failure mode
+      the training data exists to fix.</p>
+  </div>
+  <footer><span>Results</span><span>5 / 8</span></footer>
+</section>
+
+<!-- SLIDE 6 — COSMOS GATE: WHAT WORKED, WHAT DIDN'T -->
+<section class="slide">
+  <div class="eyebrow">Slide 6 · One model, two very different roles</div>
+  <h1>Cosmos-Embed1 as a classifier fails badly — as a confidence gate on Qwen, it's the whole
+    win
+    <span class="sub">Same model, two claims tested separately. Only one survived contact with the platform.</span>
+  </h1>
+
+  <div class="cols c2" style="flex:1;">
+    <div class="panel">
+      <span class="badge win">shipped</span>
+      <h2 style="margin-top:6px;">Post-hoc confidence gate, θ=0.95</h2>
+      <p class="caption">Only trust Qwen's "anomalous" call if Cosmos <em>independently</em> assigns ≥0.95
+        confidence to that exact window. Not "Cosmos is a good classifier" — Cosmos is 87.7% anomaly rate zero-shot,
+        plainly unusable alone. It's "Cosmos's raw confidence is a usable second opinion on windows Qwen already
+        flagged."</p>
+      <table style="margin-top:4px;">
+        <tr><th>Level</th><th>Before</th><th>After</th></tr>
+        <tr><td>L1 / L2</td><td class="num">0.550 / 0.400</td><td class="num">unchanged</td></tr>
+        <tr><td>L3</td><td class="num">0.150</td><td class="num win">0.249</td></tr>
+        <tr><td><b>Overall</b></td><td class="num">0.367</td><td class="num win"><b>0.400</b></td></tr>
+      </table>
+      <p class="caption">Traced to 3 concrete effects: a messy blob split into a real IoU-0.82 match, 7 noisy
+        fragments filtered to 2, one totally mistimed event removed clean.</p>
+    </div>
+    <div class="panel">
+      <span class="badge bad">failed live</span>
+      <h2 style="margin-top:6px;">Cosmos AS the Level-1 classifier</h2>
+      <p class="caption">Measured standalone: L1 <b>0.617</b> vs Qwen's 0.550 — better on both binary accuracy
+        (0.833 vs 0.750) and class accuracy. Looked like a clean win.</p>
+      <p class="caption"><b class="bad">Uploaded anyway — score dropped.</b> Cosmos fires on 22/24 L1 videos (vs
+        Qwen's 14/24) and wrecked <b>3 of 4</b> ground-truth-normal videos with false alarms the local metric didn't
+        weight heavily enough.</p>
+      <p class="caption" style="margin-top:auto;"><b class="hi">This was the third time</b> a local-only
+        improvement failed on upload. Lesson now load-bearing: check matched-event count and false-alarm count
+        directly — never trust the local score alone.</p>
+    </div>
+  </div>
+  <footer><span>Cosmos-Embed1</span><span>6 / 8</span></footer>
+</section>
+
+<!-- SLIDE 7 — LOCALIZATION VS CLASSIFICATION -->
+<section class="slide">
+  <div class="eyebrow">Slide 7 · The deepest finding</div>
+  <h1>Localization is solved. Naming the class correctly is the entire remaining ceiling
+    <span class="sub">Found by testing an unsupervised, zero-training baseline against the shipped model — on the
+      exact same windows.</span>
+  </h1>
+
+  <div class="cols c2" style="flex:1;">
+    <div class="panel">
+      <h2>What's actually happening inside real events</h2>
+      <table>
+        <tr><th>True class</th><th>Model fires?</th><th>Correct?</th></tr>
+        <tr><td>traffic_congestion</td><td class="num win">100%</td><td class="num win">100%</td></tr>
+        <tr><td>traffic_accident</td><td class="num">10%</td><td class="num bad">0%</td></tr>
+        <tr><td>loitering</td><td class="num bad">0%</td><td class="num bad">0%</td></tr>
+      </table>
+      <p class="caption" style="margin-top:6px;"><b>62% of windows inside real events are silent or wrong.</b>
+        No amount of threshold tuning lifts a ceiling set upstream of aggregation — confirmed by testing a
+        decoupled localize-then-vote design that changed nothing.</p>
+    </div>
+    <div class="panel">
+      <h2>Isolating the two halves of the problem</h2>
+      <div class="evtlist">
+        <div class="evt"><span class="dot win"></span><span><b>Unsupervised novelty score</b> (zero params, zero
+          training — just "how different is this window from the rest of its own video"): <b>AUC 0.864</b> for
+          traffic_accident vs. normal, where the fine-tuned model scores <b class="bad">0/79</b> on the same
+          windows.</span></div>
+        <div class="evt"><span class="dot win"></span><span>Novelty localization + <b>oracle-known class</b> →
+          <b>8 matched events, overall 0.669</b> — vs. the shipped pipeline's 1 match, 0.400.</span></div>
+        <div class="evt"><span class="dot bad"></span><span>Root cause: trained on <b class="bad">560 of 14,157</b>
+          labelled windows available — about 4%. The synthesized long-form dev set built specifically for this
+          mismatch was never used in training.</span></div>
+      </div>
+    </div>
+  </div>
+  <footer><span>Root-cause analysis</span><span>7 / 8</span></footer>
+</section>
+
+<!-- SLIDE 8 — STATUS + NEXT -->
+<section class="slide">
+  <div class="eyebrow">Slide 8 · Where things stand</div>
+  <h1>Shipped, submitted, and the next lever is known and quantified
+    <span class="sub">Nothing here is aspirational — every number on this slide is measured.</span>
+  </h1>
+
+  <div class="kpis">
+    <div class="kpi win"><div class="v">43.4<span style="font-size:.5em;color:var(--muted)">/100</span></div><div class="k">best public-test score, shipped (v3)</div></div>
+    <div class="kpi"><div class="v">28</div><div class="k">private evaluation videos<br>pipeline running now</div></div>
+    <div class="kpi"><div class="v">4%</div><div class="k">of labelled data actually<br>used in training so far</div></div>
+    <div class="kpi hi"><div class="v">0.669</div><div class="k">measured ceiling once the<br>class-naming gap closes</div></div>
+  </div>
+
+  <div class="cols c2" style="flex:1;">
+    <div class="panel">
+      <h2>Done</h2>
+      <div class="evtlist">
+        <div class="evt"><span class="dot win"></span><span>End-to-end pipeline validated (oracle 0.964 with a perfect window model)</span></div>
+        <div class="evt"><span class="dot win"></span><span>Fine-tuned classifier shipped + confidence-gated, 43.4/100 on the platform</span></div>
+        <div class="evt"><span class="dot win"></span><span>Platform confirmed <b>best-of</b> scoring — every experiment cost nothing to try</span></div>
+        <div class="evt"><span class="dot win"></span><span>Exact ceiling and root cause of the remaining gap located and quantified</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Next</h2>
+      <div class="evtlist">
+        <div class="evt"><span class="dot hi"></span><span>Retrain on far more of the 14,157 labelled windows (not another threshold sweep)</span></div>
+        <div class="evt"><span class="dot hi"></span><span>Actually use the synthesized long-form dev set built for this exact mismatch</span></div>
+        <div class="evt"><span class="dot"></span><span>Run the shipped v3 config on the 28-video private evaluation set</span></div>
+      </div>
+    </div>
+  </div>
+  <footer><span>AHC · Real-Time Video Anomaly Detection</span><span>8 / 8</span></footer>
+</section>

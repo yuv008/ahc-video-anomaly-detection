@@ -1,0 +1,836 @@
+{
+ "schema_version": "1.0",
+ "submission_id": "eval-v3-config-l1l2-partial",
+ "model_name": "qwen3-vl-8b-lora+cosmos-gate",
+ "run_metadata": {
+  "total_wall_time_ms": 3748961.8,
+  "hardware": "1x Tesla T4"
+ },
+ "predictions": [
+  {
+   "video_id": "E001",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 43475.7,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 36840.1,
+      "average_time_ms": 18420.0,
+      "p50_time_ms": 4885.1,
+      "p95_time_ms": 31955.0,
+      "max_time_ms": 31955.0
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6635.6,
+      "average_time_ms": 3317.8,
+      "p50_time_ms": 3136.7,
+      "p95_time_ms": 3498.9,
+      "max_time_ms": 3498.9
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E002",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 15645.0,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 9800.8,
+      "average_time_ms": 4900.4,
+      "p50_time_ms": 4825.2,
+      "p95_time_ms": 4975.6,
+      "max_time_ms": 4975.6
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 5844.2,
+      "average_time_ms": 2922.1,
+      "p50_time_ms": 2801.0,
+      "p95_time_ms": 3043.2,
+      "max_time_ms": 3043.2
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E003",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 40,
+    "chunks_processed": 10,
+    "end_to_end_internal_time_ms": 39453.9,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 5,
+      "total_time_ms": 24277.3,
+      "average_time_ms": 4855.5,
+      "p50_time_ms": 4971.6,
+      "p95_time_ms": 5055.9,
+      "max_time_ms": 5055.9
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 5,
+      "total_time_ms": 15176.6,
+      "average_time_ms": 3035.3,
+      "p50_time_ms": 3083.2,
+      "p95_time_ms": 3292.7,
+      "max_time_ms": 3292.7
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E004",
+   "events": [
+    {
+     "class_name": "stalled_or_broken_down_vehicle",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 21505.7,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 15629.1,
+      "average_time_ms": 7814.6,
+      "p50_time_ms": 7355.5,
+      "p95_time_ms": 8273.6,
+      "max_time_ms": 8273.6
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 5876.6,
+      "average_time_ms": 2938.3,
+      "p50_time_ms": 2681.5,
+      "p95_time_ms": 3195.1,
+      "max_time_ms": 3195.1
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E005",
+   "events": [
+    {
+     "class_name": "stalled_or_broken_down_vehicle",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 22686.2,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 16221.2,
+      "average_time_ms": 8110.6,
+      "p50_time_ms": 7952.2,
+      "p95_time_ms": 8269.0,
+      "max_time_ms": 8269.0
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6465.0,
+      "average_time_ms": 3232.5,
+      "p50_time_ms": 3182.7,
+      "p95_time_ms": 3282.3,
+      "max_time_ms": 3282.3
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E006",
+   "events": [
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 21569.4,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 15222.8,
+      "average_time_ms": 7611.4,
+      "p50_time_ms": 7564.8,
+      "p95_time_ms": 7658.0,
+      "max_time_ms": 7658.0
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6346.6,
+      "average_time_ms": 3173.3,
+      "p50_time_ms": 2897.9,
+      "p95_time_ms": 3448.7,
+      "max_time_ms": 3448.7
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E007",
+   "events": [
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 32,
+    "chunks_processed": 8,
+    "end_to_end_internal_time_ms": 42229.9,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 4,
+      "total_time_ms": 28860.4,
+      "average_time_ms": 7215.1,
+      "p50_time_ms": 7365.7,
+      "p95_time_ms": 7677.5,
+      "max_time_ms": 7677.5
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 4,
+      "total_time_ms": 13369.5,
+      "average_time_ms": 3342.4,
+      "p50_time_ms": 3580.6,
+      "p95_time_ms": 3754.3,
+      "max_time_ms": 3754.3
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E008",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 19774.2,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 13084.7,
+      "average_time_ms": 6542.4,
+      "p50_time_ms": 6392.3,
+      "p95_time_ms": 6692.4,
+      "max_time_ms": 6692.4
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6689.5,
+      "average_time_ms": 3344.8,
+      "p50_time_ms": 2801.0,
+      "p95_time_ms": 3888.5,
+      "max_time_ms": 3888.5
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E009",
+   "events": [
+    {
+     "class_name": "fire",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 20335.0,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 13716.6,
+      "average_time_ms": 6858.3,
+      "p50_time_ms": 6726.6,
+      "p95_time_ms": 6990.0,
+      "max_time_ms": 6990.0
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6618.4,
+      "average_time_ms": 3309.2,
+      "p50_time_ms": 2931.0,
+      "p95_time_ms": 3687.4,
+      "max_time_ms": 3687.4
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E010",
+   "events": [
+    {
+     "class_name": "fire",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 20300.2,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 13976.2,
+      "average_time_ms": 6988.1,
+      "p50_time_ms": 6984.3,
+      "p95_time_ms": 6991.9,
+      "max_time_ms": 6991.9
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6324.0,
+      "average_time_ms": 3162.0,
+      "p50_time_ms": 3075.9,
+      "p95_time_ms": 3248.1,
+      "max_time_ms": 3248.1
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E011",
+   "events": [
+    {
+     "class_name": "fire",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 20271.9,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 14075.8,
+      "average_time_ms": 7037.9,
+      "p50_time_ms": 7011.9,
+      "p95_time_ms": 7063.9,
+      "max_time_ms": 7063.9
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6196.1,
+      "average_time_ms": 3098.1,
+      "p50_time_ms": 2687.7,
+      "p95_time_ms": 3508.4,
+      "max_time_ms": 3508.4
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E012",
+   "events": [
+    {
+     "class_name": "waterlogging_or_flood",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 21852.0,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 15104.2,
+      "average_time_ms": 7552.1,
+      "p50_time_ms": 7453.7,
+      "p95_time_ms": 7650.5,
+      "max_time_ms": 7650.5
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6747.8,
+      "average_time_ms": 3373.9,
+      "p50_time_ms": 2798.5,
+      "p95_time_ms": 3949.3,
+      "max_time_ms": 3949.3
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E013",
+   "events": [
+    {
+     "class_name": "waterlogging_or_flood",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 16,
+    "chunks_processed": 4,
+    "end_to_end_internal_time_ms": 22647.4,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 2,
+      "total_time_ms": 15750.5,
+      "average_time_ms": 7875.2,
+      "p50_time_ms": 7808.9,
+      "p95_time_ms": 7941.6,
+      "max_time_ms": 7941.6
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 2,
+      "total_time_ms": 6896.9,
+      "average_time_ms": 3448.4,
+      "p50_time_ms": 3101.2,
+      "p95_time_ms": 3795.7,
+      "max_time_ms": 3795.7
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E014",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 24,
+    "chunks_processed": 6,
+    "end_to_end_internal_time_ms": 30014.6,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 3,
+      "total_time_ms": 19958.1,
+      "average_time_ms": 6652.7,
+      "p50_time_ms": 6652.2,
+      "p95_time_ms": 6658.3,
+      "max_time_ms": 6658.3
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 3,
+      "total_time_ms": 10056.5,
+      "average_time_ms": 3352.2,
+      "p50_time_ms": 3306.4,
+      "p95_time_ms": 3448.0,
+      "max_time_ms": 3448.0
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E015",
+   "events": [
+    {
+     "class_name": "stalled_or_broken_down_vehicle",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 32,
+    "chunks_processed": 8,
+    "end_to_end_internal_time_ms": 42672.1,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 4,
+      "total_time_ms": 29363.8,
+      "average_time_ms": 7340.9,
+      "p50_time_ms": 8011.9,
+      "p95_time_ms": 8088.4,
+      "max_time_ms": 8088.4
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 4,
+      "total_time_ms": 13308.3,
+      "average_time_ms": 3327.1,
+      "p50_time_ms": 3338.6,
+      "p95_time_ms": 3410.2,
+      "max_time_ms": 3410.2
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E016",
+   "events": [
+    {
+     "class_name": "traffic_accident",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 40,
+    "chunks_processed": 10,
+    "end_to_end_internal_time_ms": 52317.5,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 5,
+      "total_time_ms": 35215.2,
+      "average_time_ms": 7043.0,
+      "p50_time_ms": 7175.2,
+      "p95_time_ms": 7414.8,
+      "max_time_ms": 7414.8
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 5,
+      "total_time_ms": 17102.3,
+      "average_time_ms": 3420.5,
+      "p50_time_ms": 3422.3,
+      "p95_time_ms": 3538.6,
+      "max_time_ms": 3538.6
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E017",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 64,
+    "chunks_processed": 16,
+    "end_to_end_internal_time_ms": 63725.2,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 8,
+      "total_time_ms": 36772.3,
+      "average_time_ms": 4596.5,
+      "p50_time_ms": 4702.3,
+      "p95_time_ms": 4951.8,
+      "max_time_ms": 4951.8
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 8,
+      "total_time_ms": 26952.9,
+      "average_time_ms": 3369.1,
+      "p50_time_ms": 3428.7,
+      "p95_time_ms": 3732.2,
+      "max_time_ms": 3732.2
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E018",
+   "events": [
+    {
+     "class_name": "fighting_or_violence",
+     "start_time_sec": null,
+     "end_time_sec": null
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 64,
+    "chunks_processed": 16,
+    "end_to_end_internal_time_ms": 71797.5,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 8,
+      "total_time_ms": 45048.7,
+      "average_time_ms": 5631.1,
+      "p50_time_ms": 5850.7,
+      "p95_time_ms": 6119.3,
+      "max_time_ms": 6119.3
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 8,
+      "total_time_ms": 26748.8,
+      "average_time_ms": 3343.6,
+      "p50_time_ms": 3171.0,
+      "p95_time_ms": 4114.8,
+      "max_time_ms": 4114.8
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E019",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 48,
+    "chunks_processed": 12,
+    "end_to_end_internal_time_ms": 64307.7,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 6,
+      "total_time_ms": 44275.7,
+      "average_time_ms": 7379.3,
+      "p50_time_ms": 6972.1,
+      "p95_time_ms": 8367.4,
+      "max_time_ms": 8367.4
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 6,
+      "total_time_ms": 20032.0,
+      "average_time_ms": 3338.7,
+      "p50_time_ms": 2859.4,
+      "p95_time_ms": 3959.4,
+      "max_time_ms": 3959.4
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E020",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 48,
+    "chunks_processed": 12,
+    "end_to_end_internal_time_ms": 61525.3,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 6,
+      "total_time_ms": 41168.9,
+      "average_time_ms": 6861.5,
+      "p50_time_ms": 6864.3,
+      "p95_time_ms": 6988.5,
+      "max_time_ms": 6988.5
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 6,
+      "total_time_ms": 20356.4,
+      "average_time_ms": 3392.7,
+      "p50_time_ms": 3035.3,
+      "p95_time_ms": 3868.9,
+      "max_time_ms": 3868.9
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E021",
+   "events": [
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": 102.0,
+     "end_time_sec": 106.0
+    },
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": 182.0,
+     "end_time_sec": 194.0
+    },
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": 234.0,
+     "end_time_sec": 238.0
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 480,
+    "chunks_processed": 120,
+    "end_to_end_internal_time_ms": 603856.8,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 60,
+      "total_time_ms": 407711.6,
+      "average_time_ms": 6795.2,
+      "p50_time_ms": 6722.3,
+      "p95_time_ms": 7404.4,
+      "max_time_ms": 7882.9
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 60,
+      "total_time_ms": 196145.2,
+      "average_time_ms": 3269.1,
+      "p50_time_ms": 3230.9,
+      "p95_time_ms": 3965.8,
+      "max_time_ms": 4029.5
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E022",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 480,
+    "chunks_processed": 120,
+    "end_to_end_internal_time_ms": 611285.8,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 60,
+      "total_time_ms": 408183.2,
+      "average_time_ms": 6803.1,
+      "p50_time_ms": 6715.4,
+      "p95_time_ms": 7844.3,
+      "max_time_ms": 7927.1
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 60,
+      "total_time_ms": 203102.6,
+      "average_time_ms": 3385.0,
+      "p50_time_ms": 3409.8,
+      "p95_time_ms": 4007.7,
+      "max_time_ms": 4051.5
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E023",
+   "events": [
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": 2.0,
+     "end_time_sec": 238.0
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 480,
+    "chunks_processed": 120,
+    "end_to_end_internal_time_ms": 645359.2,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 60,
+      "total_time_ms": 442377.4,
+      "average_time_ms": 7373.0,
+      "p50_time_ms": 7385.8,
+      "p95_time_ms": 7549.5,
+      "max_time_ms": 7638.6
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 60,
+      "total_time_ms": 202981.8,
+      "average_time_ms": 3383.0,
+      "p50_time_ms": 3425.9,
+      "p95_time_ms": 4013.4,
+      "max_time_ms": 4056.8
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E024",
+   "events": [],
+   "runtime_metadata": {
+    "frames_processed": 488,
+    "chunks_processed": 122,
+    "end_to_end_internal_time_ms": 612390.8,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 61,
+      "total_time_ms": 406694.2,
+      "average_time_ms": 6667.1,
+      "p50_time_ms": 6677.5,
+      "p95_time_ms": 6901.8,
+      "max_time_ms": 7034.7
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 61,
+      "total_time_ms": 205696.6,
+      "average_time_ms": 3372.1,
+      "p50_time_ms": 3079.9,
+      "p95_time_ms": 4041.1,
+      "max_time_ms": 4066.4
+     }
+    ]
+   }
+  },
+  {
+   "video_id": "E025",
+   "events": [
+    {
+     "class_name": "traffic_congestion",
+     "start_time_sec": 126.0,
+     "end_time_sec": 138.0
+    }
+   ],
+   "runtime_metadata": {
+    "frames_processed": 288,
+    "chunks_processed": 126,
+    "end_to_end_internal_time_ms": 557962.8,
+    "model_runtimes": [
+     {
+      "model_name": "qwen3-vl-8b-4bit-lora-r32",
+      "call_count": 36,
+      "total_time_ms": 253806.6,
+      "average_time_ms": 7050.2,
+      "p50_time_ms": 6934.3,
+      "p95_time_ms": 7638.0,
+      "max_time_ms": 8158.8
+     },
+     {
+      "model_name": "cosmos-embed1-448p-anomaly-detection-gate",
+      "call_count": 90,
+      "total_time_ms": 304156.2,
+      "average_time_ms": 3379.5,
+      "p50_time_ms": 3335.9,
+      "p95_time_ms": 3973.4,
+      "max_time_ms": 4105.8
+     }
+    ]
+   }
+  }
+ ]
+}
