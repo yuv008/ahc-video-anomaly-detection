@@ -34,3 +34,8 @@ venv/
 /poll.py
 /poll2.py
 /preds.csv
+/launch_train.py
+/polltrain.py
+/peek.py
+/handoff.py
+/chunkcheck.py

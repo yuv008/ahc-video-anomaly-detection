@@ -557,3 +557,49 @@ and **each upload replaces the score outright — there is no "best of"**. So a 
 worse permanently lowers your standing. Validate locally with `submit.validate()` before
 spending an upload, and do not submit a configuration that has not beaten the current one on
 the local official metric.
+
+---
+
+## 10. Measured results
+
+### 10.1 Zero-shot baseline (no fine-tuning)
+
+Qwen2.5-VL-7B 4-bit, 8 frames @ 256 tok/frame, 4s/4s windows, scored with the official
+metric. This is the anchor: without it, a fine-tuned number means nothing.
+
+| | score |
+|---|---|
+| Level 1 | **0.329** — anomaly-vs-normal accuracy 0.458, class accuracy 0.200 |
+| Overall (partial coverage) | 0.232 |
+| Oracle ceiling, same config | **0.964** |
+
+Level-1 breakdown across all 24 videos:
+
+| Outcome | n | Detail |
+|---|---|---|
+| Correct normal | 4/4 | **zero false alarms** |
+| Correct class | 4 | accident, fire ×2, waterlogging |
+| Detected but misclassified | 3 | smoke→fire ×2, wrong_way→accident |
+| **Missed entirely** | **13** | congestion ×2, fighting ×2, loitering ×2, road_spill ×2, stalled, blocking, accident ×2, flood |
+
+**The failure is systematic, not noise.** The model reliably catches anomalies with a strong
+visual signature — fire, flood — and misses essentially every *contextual* class: congestion,
+stalled vehicle, vehicle blocking, wrong-way driving, loitering, fighting. That is exactly
+the distinction the brief identifies as the hard part ("a stationary car is unremarkable in a
+parking bay and a problem on a highway shoulder"), and exactly what 2,998 labelled training
+windows exist to teach.
+
+Two properties of this baseline are worth keeping:
+
+- **Zero false alarms.** Under the official rules a single spurious event zeroes a normal
+  Level-2/3 video, so the model's conservatism is an asset there even while it costs recall.
+- **Output is well-formed.** 100% of generations parsed as valid JSON, and P(anomaly) from
+  token logprobs came out continuous (0.554–0.965), confirming the scoring path works and
+  that the aggregator's hysteresis has a real quantity to threshold.
+
+### 10.2 What the gap says
+
+Zero-shot 0.329 against an oracle ceiling of 0.964 means the pipeline is not the limitation —
+the classifier is. The plumbing (windowing, aggregation, boundary refinement, scoring,
+submission) is validated end-to-end and reaches 0.964 with a perfect window model, so
+essentially all remaining headroom is Stage 2.

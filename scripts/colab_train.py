@@ -38,29 +38,46 @@ def target_json(class_name):
                       separators=(",", ":"))
 
 
-def load_examples(export_dir: Path):
-    from PIL import Image
+class LazyWindowDataset:
+    """Frames are decoded per __getitem__, never all at once.
 
-    rows = [json.loads(l) for l in (export_dir / "index.jsonl").open(encoding="utf-8")]
-    frames_root = export_dir / "frames"
+    Loading eagerly is not an option: 2,998 windows x 8 frames at 588x336x3 is ~14.2 GB of
+    decoded pixels, against roughly 13 GB of VM RAM. `Image.open` alone is lazy, but the
+    `.convert("RGB")` needed for the model forces the decode, so the whole set would
+    materialise before the first training step and OOM.
 
-    # List comprehension, NOT dataset.map(): mapping breaks on multi-image samples
-    # (hackathon primer). Images are opened lazily by PIL and materialised by the collator.
-    examples = []
-    for r in rows:
-        wdir = frames_root / r["id"]
-        paths = sorted(wdir.glob("f*.jpg"), key=lambda p: int(p.stem[1:]))
-        if not paths:
-            continue
+    Implements __len__/__getitem__ so SFTTrainer treats it as a map-style dataset.
+    """
+
+    def __init__(self, export_dir: Path):
+        rows = [json.loads(l) for l in (export_dir / "index.jsonl").open(encoding="utf-8")]
+        frames_root = export_dir / "frames"
+        self.items = []
+        for r in rows:
+            paths = sorted((frames_root / r["id"]).glob("f*.jpg"),
+                           key=lambda p: int(p.stem[1:]))
+            if paths:
+                self.items.append((paths, r["class_name"]))
+
+    def __len__(self):
+        return len(self.items)
+
+    def class_counts(self):
+        from collections import Counter
+        return Counter(c for _, c in self.items)
+
+    def __getitem__(self, idx):
+        from PIL import Image
+
+        paths, class_name = self.items[idx]
         imgs = [Image.open(p).convert("RGB") for p in paths]
-        examples.append({"messages": [
+        return {"messages": [
             {"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]},
             {"role": "user", "content": [{"type": "image", "image": im} for im in imgs]
                                         + [{"type": "text", "text": USER_PROMPT}]},
             {"role": "assistant",
-             "content": [{"type": "text", "text": target_json(r["class_name"])}]},
-        ]})
-    return examples
+             "content": [{"type": "text", "text": target_json(class_name)}]},
+        ]}
 
 
 def main():
@@ -70,7 +87,9 @@ def main():
     ap.add_argument("--base-model", default="unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit")
     ap.add_argument("--max-steps", type=int, default=300)
     ap.add_argument("--lr", type=float, default=2e-4)
-    ap.add_argument("--grad-accum", type=int, default=8)
+    ap.add_argument("--grad-accum", type=int, default=4)
+    ap.add_argument("--lora-r", type=int, default=32)
+    ap.add_argument("--save-steps", type=int, default=50)
     args = ap.parse_args()
 
     import torch
@@ -87,12 +106,9 @@ def main():
     print(f"device: {torch.cuda.get_device_name(0)} | precision: {'bf16' if use_bf16 else 'fp16'}",
           flush=True)
 
-    examples = load_examples(args.export_dir)
-    from collections import Counter
-    dist = Counter(json.loads(e["messages"][2]["content"][0]["text"])["class_name"]
-                   for e in examples)
-    print(f"training windows: {len(examples)}", flush=True)
-    for c, n in dist.most_common():
+    dataset = LazyWindowDataset(args.export_dir)
+    print(f"training windows: {len(dataset)}", flush=True)
+    for c, n in dataset.class_counts().most_common():
         print(f"  {c:35s} {n}", flush=True)
 
     model, processor = FastVisionModel.from_pretrained(
@@ -104,7 +120,7 @@ def main():
         finetune_language_layers=True,
         finetune_attention_modules=True,
         finetune_mlp_modules=True,
-        r=16, lora_alpha=16, lora_dropout=0, bias="none",
+        r=args.lora_r, lora_alpha=args.lora_r, lora_dropout=0, bias="none",
         random_state=3407, target_modules="all-linear",
     )
 
@@ -113,7 +129,7 @@ def main():
         model=model,
         tokenizer=processor,
         data_collator=UnslothVisionDataCollator(model, processor, train_on_responses_only=True),
-        train_dataset=examples,
+        train_dataset=dataset,
         args=SFTConfig(
             per_device_train_batch_size=1,
             gradient_accumulation_steps=args.grad_accum,
@@ -127,6 +143,9 @@ def main():
             lr_scheduler_type="linear",
             seed=3407,
             output_dir=str(args.output_dir),
+            save_steps=args.save_steps,
+            save_total_limit=2,
+            save_strategy="steps",
             report_to="none",
             remove_unused_columns=False,
             dataset_text_field="",

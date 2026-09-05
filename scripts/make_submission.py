@@ -25,6 +25,7 @@ import pandas as pd
 from ahc_vad.eval.matching import Event
 from ahc_vad.eval.official import print_official, score_submission
 from ahc_vad.infer.aggregate import AggregationPolicy, WindowVerdict, aggregate_class
+from ahc_vad.infer.refine import refine_events
 from ahc_vad.submit import (RuntimeMetadata, build_submission, build_video_entry,
                             make_model_runtime, validate, write_submission)
 
@@ -44,12 +45,22 @@ def load_verdicts(path: Path):
     return dict(by_video), dict(timing), dict(frames)
 
 
-def aggregate(by_video, policy: AggregationPolicy) -> dict[str, list[Event]]:
+def aggregate(by_video, policy: AggregationPolicy, levels=None,
+              refine: str = "midpoint", window_sec: float = 4.0) -> dict[str, list[Event]]:
+    """Aggregate per class, then refine boundaries.
+
+    Refinement is applied to Levels 2/3 only: Level 1 events carry null timestamps, so a
+    sub-grid boundary is meaningless there. Measured on the oracle, `midpoint` lifts the
+    ceiling 0.952 -> 0.964 overall and Level-3 match_f1 0.94 -> 1.00, because window-edge
+    boundaries over-cover the true event and lose the IoU >= 0.5 gate (infer/refine.py).
+    """
     out: dict[str, list[Event]] = {}
     for vid, verdicts in by_video.items():
         events: list[Event] = []
         for cls in sorted({v.class_name for v in verdicts} - {"normal"}):
             events.extend(aggregate_class(vid, cls, verdicts, policy))
+        if refine != "none" and (levels is None or levels.get(vid, 1) >= 2):
+            events = refine_events(events, verdicts, window_sec, refine)
         out[vid] = sorted(events, key=lambda e: e.start_time_sec or 0.0)
     return out
 
@@ -81,6 +92,8 @@ def main() -> None:
     ap.add_argument("--model-name", default="qwen2.5-vl-7b-4bit-lora")
     ap.add_argument("--hardware", default="1x Tesla T4 (16GB)")
     ap.add_argument("--sweep", action="store_true")
+    ap.add_argument("--refine", default="midpoint",
+                    choices=["none", "midpoint", "interpolate", "both"])
     args = ap.parse_args()
 
     by_video, timing, frames = load_verdicts(args.verdicts)
@@ -105,7 +118,7 @@ def main() -> None:
             if tl > th:
                 continue
             pol = AggregationPolicy(th, tl, gap, mind)
-            res = official_of(aggregate(by_video, pol), gt_by, levels)
+            res = official_of(aggregate(by_video, pol, levels, args.refine), gt_by, levels)
             results.append((res["overall"], res, (th, tl, gap, mind)))
         results.sort(key=lambda x: -x[0])
 
@@ -119,7 +132,7 @@ def main() -> None:
         best_policy = AggregationPolicy(*results[0][2])
         print(f"\nbest policy: {best_policy}\n")
 
-    pred_events = aggregate(by_video, best_policy)
+    pred_events = aggregate(by_video, best_policy, levels, args.refine)
     print_official(official_of(pred_events, gt_by, levels))
 
     # Build the submission file.
