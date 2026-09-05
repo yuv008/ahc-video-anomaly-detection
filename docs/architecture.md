@@ -603,3 +603,75 @@ Zero-shot 0.329 against an oracle ceiling of 0.964 means the pipeline is not the
 the classifier is. The plumbing (windowing, aggregation, boundary refinement, scoring,
 submission) is validated end-to-end and reaches 0.964 with a perfect window model, so
 essentially all remaining headroom is Stage 2.
+
+---
+
+## 11. Model selection revisited, and the hardware honesty question
+
+### 11.1 Qwen3-VL-8B replaces Qwen2.5-VL-7B
+
+The original pick came from our own T4 benchmark (§5.4) and was never revisited against
+external evidence — even though the AI City 2026 Track-3 leaderboard was already in hand:
+
+| Rank | Team | Score | Model |
+|---|---|---|---|
+| 1 | Stellarview AI | 0.6788 | Qwen 3.5 |
+| — | UOB&UW | 0.6779 | **Qwen3VL-8B** |
+| 2 | FPT AI Vision | 0.6703 | **Qwen3-VL-8B** |
+| 3 | Smart Vision | 0.6669 | Qwen |
+
+Every top entry runs a Qwen VLM around 8B. Two things were verified before switching, since
+either would have silently invalidated the frame packs or the training script:
+
+- **Vision geometry differs.** Qwen3-VL uses patch 16 (1024 px/token) against Qwen2.5-VL's
+  patch 14 (784). The same 588×336 frame therefore costs **192 tokens instead of 252** —
+  cheaper — though 588 is not a multiple of 32, so the processor re-rounds our packs.
+- **Chat template is still ChatML**, so the `train_on_responses_only` markers carry over.
+
+**Qwen3.5 was considered and rejected on tooling, not merit.** It is multimodal
+(`Qwen3_5ForConditionalGeneration`, vision tower present), but has **no unsloth 4-bit build**,
+and unsloth is what makes an 8B trainable inside 16GB at all. The leaderboard gap between
+Qwen3.5 and Qwen3-VL-8B is **0.0009** — noise — so the trade was a rewrite of the training
+path against a rounding error.
+
+### 11.2 Train on H100, infer on T4 — and why that is not cheating
+
+The brief constrains the **runtime**, not development:
+
+> The system must run in real time on **limited GPU capability**, so that inference stays
+> economical when it is running across many drones.
+
+This is the same distinction that permits large hosted models for generating training data
+but forbids them at inference. So:
+
+| Phase | Hardware | Reasoning |
+|---|---|---|
+| Training | H100 (or T4) | Development-time. Nothing in the brief constrains it. |
+| **Scored inference** | **T4** | This is the claim being made, and the question being asked. |
+
+Running scored inference on an H100 would answer an easier question than the one posed, and
+`runtime_metadata.hardware` would say so in the submission. The T4 numbers are also simply a
+better result: **7B at 4 frames / 128 tok/frame is 2.21 s/window against a 4 s budget — 55%
+of real-time on a single feed** (§5.3). That is a direct, measured answer to *"can a small VLM
+do this reliably in real time?"*
+
+Lightning's persistent storage makes the split free: the LoRA adapter survives a machine
+switch, so training can move to a fast GPU and inference move back.
+
+### 11.3 Infrastructure findings that cost real time
+
+**Missing `python3-dev` silently cost a 5× slowdown.** Triton could not JIT-compile its CUDA
+kernels (`fatal error: Python.h: No such file or directory`) and fell back to slow paths.
+Training ran at **89.7 s/step**; after `apt-get install python3.12-dev` it ran at
+**16.7 s/step** — a 7.5-hour job became 80 minutes. Nothing in the progress bar indicated a
+problem; the error was buried in stderr among compile warnings.
+
+**Training and 8B inference cannot share a 15.4GB T4.** Concurrent evaluation OOMs
+(`Some modules are dispatched on the CPU or the disk`), so checkpoints must be validated by
+pausing training — hence `--resume`, which reads the newest checkpoint off the persistent
+volume. On an 80GB card both fit and this constraint disappears.
+
+**Colab free reclaimed three GPU sessions mid-run** (`404/401`), each loss costing a 728MB
+re-upload. Lightning Studios keep files on a persistent volume, so a stopped Studio costs
+minutes of compute rather than half an hour of transfer. This is the single biggest
+reliability difference between the two platforms for a workload of this shape.
